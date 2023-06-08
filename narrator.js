@@ -39,6 +39,7 @@ class NarratorMenu extends FormApplication {
                 2: game.i18n.localize('USER.RoleTrusted'),
                 3: game.i18n.localize('USER.RoleAssistant'),
                 4: game.i18n.localize('USER.RoleGamemaster'),
+                5: "Disabled",
             },
         };
     }
@@ -58,7 +59,7 @@ const NarratorTools = {
     _chatMessage(message, content, chatData) {
         let commands = {};
         content = content.replace(/\n/g, '<br>');
-        if (game.user.role >= game.settings.get(MODULE, 'PERMAs')) {
+        if (game.settings.get(MODULE, 'PERMAs') != 5 && game.user.role >= game.settings.get(MODULE, 'PERMAs')) {
             commands.as = new RegExp('^(?:\\/as$|\\/as ([^]*))', 'i');
         }
         if (game.user.role >= game.settings.get(MODULE, 'PERMDescribe')) {
@@ -91,11 +92,11 @@ const NarratorTools = {
                 return false;
             }
         }
-        if (game.user.role >= game.settings.get(MODULE, 'PERMAs') && this.character && !/^\/.*/.exec(content)) {
-            ChatMessage.create({ type: 2, content, speaker: { alias: this.character } });
-            return false;
-        }
-    },
+    if (game.settings.get(MODULE, 'PERMAs') != 5 && game.user.role >= game.settings.get(MODULE, 'PERMAs') && this.character && !/^\/.*/.exec(content)) {
+        ChatMessage.create({ type: 2, content, speaker: { alias: this.character } });
+        return false;
+    }
+},
     _controller({ narration, scenery }) {
         this._updateScenery(scenery);
         if (game.user.role >= game.settings.get(MODULE, 'PERMScenery')) {
@@ -312,10 +313,7 @@ const NarratorTools = {
         this._controller(game.settings.get(MODULE, 'sharedState'));
         this._pause();
         document.addEventListener('contextmenu', (ev) => {
-            if (ev.target.classList.contains('journal-entry-pages') ||
-                $(ev.target).parents('div.journal-entry-pages').length ||
-                ev.target.classList.contains('editor-content') ||
-                $(ev.target).parents('div.editor-content').length) {
+            if (ev.target.classList.contains('journal-entry-pages') || $(ev.target).parents('div.journal-entry-pages').length) {
                 const time = this._menu.isOpen() ? 100 : 0;
                 this._menu.hide();
                 setTimeout(() => {
